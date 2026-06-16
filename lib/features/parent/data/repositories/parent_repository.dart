@@ -143,15 +143,18 @@ class ParentRepository {
     final student = rows.first as Map<String, dynamic>;
     final studentId = student['id'] as String;
 
-    final Map<String, dynamic> userRow = await _client
+    // maybeSingle (bukan single) agar tidak melempar exception bila baris
+    // users anak tak terbaca (mis. RLS belum mengizinkan). Dashboard tetap
+    // tampil; nama jatuh ke fallback alih-alih seluruh layar error.
+    final Map<String, dynamic>? userRow = await _client
         .from('users')
         .select('fullname')
         .eq('id', studentId)
-        .single();
+        .maybeSingle();
 
     return ChildStudentInfo(
       studentId: studentId,
-      fullname: userRow['fullname'] as String? ?? '-',
+      fullname: userRow?['fullname'] as String? ?? 'Siswa',
       nisn: student['nisn'] as String? ?? '-',
       className: student['class'] as String? ?? '-',
     );
